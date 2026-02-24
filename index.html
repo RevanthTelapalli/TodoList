@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>To-Do List App</title>
+
+<style>
+body {
+  font-family: "Poppins", sans-serif;
+   background: linear-gradient(135deg, #667eea, #764ba2);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.todo-container {
+  background: white;
+  width: 90%;
+  max-width: 450px;
+  margin-top: 80px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px 25px 40px;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.input-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+input[type="text"] {
+  width: 70%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  outline: none;
+}
+
+button {
+  padding: 10px 15px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.2s;
+}
+
+button:hover {
+  background-color: #43a047;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+li span {
+  flex-grow: 1;
+  margin-left: 10px;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+li.completed span {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.actions button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 16px;
+  color: #555;
+}
+
+.actions button:hover {
+  color: #000;
+}
+
+@media (max-width: 500px) {
+  .input-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+  input[type="text"],
+  button {
+    width: 100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="todo-container">
+  <h1>📝 To-Do List</h1>
+
+  <div class="input-section">
+    <input type="text" id="taskInput" placeholder="Enter a new task..." />
+    <button id="addTaskBtn">Add</button>
+  </div>
+
+  <ul id="taskList"></ul>
+</div>
+
+<script>
+const taskInput = document.getElementById("taskInput");
+const addTaskBtn = document.getElementById("addTaskBtn");
+const taskList = document.getElementById("taskList");
+
+window.addEventListener("load", loadTasks);
+
+function loadTasks() {
+  const storedTasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  storedTasks.forEach(task => addTask(task.text, task.completed));
+}
+
+function saveTasks() {
+  const tasks = [];
+  document.querySelectorAll("#taskList li").forEach(li => {
+    tasks.push({
+      text: li.querySelector("span").textContent,
+      completed: li.classList.contains("completed"),
+    });
+  });
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+addTaskBtn.addEventListener("click", () => {
+  const text = taskInput.value.trim();
+  if (text !== "") {
+    addTask(text);
+    taskInput.value = "";
+  }
+});
+
+taskInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") addTaskBtn.click();
+});
+
+function addTask(text, isCompleted = false) {
+  const li = document.createElement("li");
+  if (isCompleted) li.classList.add("completed");
+
+  const taskText = document.createElement("span");
+  taskText.textContent = text;
+  taskText.addEventListener("click", () => {
+    li.classList.toggle("completed");
+    saveTasks();
+  });
+
+  const actions = document.createElement("div");
+  actions.classList.add("actions");
+
+  const editBtn = document.createElement("button");
+  editBtn.innerHTML = "✏️";
+  editBtn.addEventListener("click", () => {
+    const newText = prompt("Edit task:", taskText.textContent);
+    if (newText !== null && newText.trim() !== "") {
+      taskText.textContent = newText.trim();
+      saveTasks();
+    }
+  });
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.innerHTML = "❌";
+  deleteBtn.addEventListener("click", () => {
+    li.remove();
+    saveTasks();
+  });
+
+  actions.append(editBtn, deleteBtn);
+  li.append(taskText, actions);
+  taskList.appendChild(li);
+  saveTasks();
+}
+</script>
+
+</body>
+</html>
